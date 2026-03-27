@@ -1,0 +1,875 @@
+import tkinter as tk
+from tkinter import ttk, Canvas, messagebox  # Added Canvas and messagebox
+from tkinter import Label, Button, Entry
+from PIL import Image, ImageTk
+import random
+
+class DiceGame:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Dice Rolling Game")
+        self.master.geometry("1300x1000")
+        self.master.resizable(True, True)
+
+        self.player1_name = ""
+        self.player2_name = ""
+        self.current_player = 1
+        self.player1_score = 0
+        self.player2_score = 0
+        self.turn_count = 0
+        self.max_turns = 2
+        self.dice = Dice()
+        
+
+        self.create_opening_screen()
+    def roll(self):
+        return random.randint(1, 6)
+
+    def create_opening_screen(self):
+        # Create a canvas for the gradient background
+        canvas = tk.Canvas(self.master, width=1300, height=1000)
+        canvas.place(relx=0, rely=0)
+
+        # Load background image for the opening screen using PIL
+        bg_image = Image.open("C:/Users/PMLS/Documents/DiceOpen.png")
+        bg_image = bg_image.resize((1300, 1000), Image.ANTIALIAS)
+        self.bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Display the background image
+        bg_label = tk.Label(self.master, image=self.bg_photo)
+        bg_label.image = self.bg_photo
+        bg_label.place(relx=0.5, rely=0.5, anchor="center")
+
+        # Create buttons for Play and Rules of the Game
+        play_button = ttk.Button(self.master, text="Play", command=self.show_game_options, style="PlayButton.TButton")
+        play_button.place(relx=0.5, rely=0.75, anchor="center")
+
+        rules_button = ttk.Button(self.master, text="Rules of the Game", command=self.show_rules, style="RulesButton.TButton")
+        rules_button.place(relx=0.5, rely=0.85, anchor="center")
+
+        # Adjust style for buttons
+        style = ttk.Style()
+        style.configure("PlayButton.TButton", foreground="brown", background="#0b5345", font=("Times new roman", 25, "bold"), padding=(20, 10))
+        style.configure("RulesButton.TButton", foreground="green", background="#0b5345", font=("Helvetica", 14), padding=(10, 5))
+
+    def show_game_options(self):
+        # Destroy the current screen and show the game options screen
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.create_game_options_screen()
+
+    def create_game_options_screen(self):
+        # Create a canvas for the gradient background
+        canvas = Canvas(self.master, width=1000, height=800)
+        canvas.place(relx=0, rely=0)
+        
+        bg_image = Image.open("C:/Users/PMLS/Documents/Dice3.jpg")
+        bg_image = bg_image.resize((1300, 1000), Image.ANTIALIAS)
+        self.bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Display the background image
+        bg_label = tk.Label(self.master, image=self.bg_photo)
+        bg_label.image = self.bg_photo
+        bg_label.place(relx=0.5, rely=0.5, anchor="center")
+        
+        start_color = "#336633"  # Light sky blue
+        end_color = "#330033"    # Steel blue
+        
+        
+        game_selection_label = Label(self.master, text="Which Game You Want to Play?", font=("Helvetica", 16), fg="White", bg="#330033")
+        game_selection_label.place(relx=0.5, rely=0.05, anchor="center")
+
+        # Create a vertical gradient rectangle
+        for i in range(1000):
+            # Interpolate color
+            r = int((1 - i / 1000) * int(start_color[1:3], 16) + (i / 1000) * int(end_color[1:3], 16))
+            g = int((1 - i / 1000) * int(start_color[3:5], 16) + (i / 1000) * int(end_color[3:5], 16))
+            b = int((1 - i / 1000) * int(start_color[5:], 16) + (i / 1000) * int(end_color[5:], 16))
+            color = f'#{r:02x}{g:02x}{b:02x}'
+            canvas.create_line(0, i, 1300, i, fill=color)
+
+        # Load images for game options
+        dice_image = Image.open("C:\\Users\\PMLS\\Documents\\DiceRolling.jpg")  # Change to your image path
+        target_image = Image.open("C:\\Users\\PMLS\\Documents\\DiceTarget.jpg")  # Change to your image path
+        guess_image = Image.open("C:\\Users\\PMLS\\Documents\\DiceGuess.jpg")  # Change to your image path
+        pig_image = Image.open("C:\\Users\\PMLS\\Documents\\PigDice2.png")  # Change to your image path
+
+        # Resize images to fit the screen
+        dice_image = dice_image.resize((200, 200), Image.ANTIALIAS)
+        target_image = target_image.resize((200, 200), Image.ANTIALIAS)
+        guess_image = guess_image.resize((200, 200), Image.ANTIALIAS)
+        pig_image = pig_image.resize((200, 200), Image.ANTIALIAS)
+
+        # Convert images to PhotoImage objects
+        self.dice_photo = ImageTk.PhotoImage(dice_image)
+        self.target_photo = ImageTk.PhotoImage(target_image)
+        self.guess_photo = ImageTk.PhotoImage(guess_image)
+        self.pig_photo = ImageTk.PhotoImage(pig_image)
+
+        # Display images above the buttons
+        dice_label = Label(self.master, image=self.dice_photo)
+        dice_label.place(relx=0.25, rely=0.25, anchor="center")
+
+        target_label = Label(self.master, image=self.target_photo)
+        target_label.place(relx=0.75, rely=0.25, anchor="center")
+
+        guess_label = Label(self.master, image=self.guess_photo)
+        guess_label.place(relx=0.25, rely=0.675, anchor="center")
+
+        pig_label = Label(self.master, image=self.pig_photo)
+        pig_label.place(relx=0.75, rely=0.675, anchor="center")
+
+        # Create buttons for game options
+        dice_button = ttk.Button(self.master, text="Dice Rolling Game", command=self.start_dice_game, style="GameButton.TButton")
+        dice_button.place(relx=0.25, rely=0.45, anchor="center")
+
+        target_button = ttk.Button(self.master, text="Target Rolling Game", command=self.start_target_game, style="GameButton.TButton")
+        target_button.place(relx=0.75, rely=0.45, anchor="center")
+
+        guess_button = ttk.Button(self.master, text="Guess Dice Game", command=self.start_guess_game, style="GameButton.TButton")
+        guess_button.place(relx=0.25, rely=0.875, anchor="center")
+
+        pig_button = ttk.Button(self.master, text="Big Pig Dice Game", command=self.show_pig_games, style="GameButton.TButton")
+        pig_button.place(relx=0.75, rely=0.875, anchor="center")
+
+        # Create a back button
+        back_button = ttk.Button(self.master, text="Back", command=self.create_opening_screen, style="BackButton.TButton")
+        back_button.place(relx=0.5, rely=0.95, anchor="center")
+
+        # Adjust style for buttons
+        style = ttk.Style()
+        style.configure("GameButton.TButton", foreground="#003366", background="Green", font=("Helvetica", 16), padding=(16, 10))
+        style.configure("BackButton.TButton", foreground="Red", background="#FF5733", font=("Helvetica", 16), padding=(8, 3))
+        
+    
+
+        # Your game options screen creation code here...
+
+    def start_dice_game(self):
+        # Destroy the current screen and start the dice game
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.create_home_screen()
+
+    def create_home_screen(self):
+        # Your home screen creation code here...
+        canvas = Canvas(self.master, width=1300, height=1000)
+        canvas.place(relx=0, rely=0)
+
+    # Load background image for home screen using PIL
+        bg_image = Image.open("C:/Users/PMLS/Documents/Dice1.jpg")
+        bg_image = bg_image.resize((1300, 1000), Image.ANTIALIAS)  # Resize the image to fit the window
+        self.bg_photo = ImageTk.PhotoImage(bg_image)
+        bg_label = Label(self.master, image=self.bg_photo)
+        bg_label.image = self.bg_photo  # Keep a reference to the image to prevent garbage collection
+        bg_label.place(relx=0.5, rely=0.5, anchor="center")
+        
+        game_name_label = Label(self.master, text="Dice Rolling Game", font=("Helvetica", 16), fg="White", bg="#330033")
+        game_name_label.place(relx=0.07, rely=0.03, anchor="center")
+
+
+    # Define gradient colors
+        start_color = "#87CEEB"  # Light sky blue
+        end_color = "#4682B4"    # Steel blue
+
+    # Create a vertical gradient rectangle
+        for i in range(600):
+        # Interpolate color
+            r = int((1 - i / 600) * int(start_color[1:3], 16) + (i / 600) * int(end_color[1:3], 16))
+            g = int((1 - i / 600) * int(start_color[3:5], 16) + (i / 600) * int(end_color[3:5], 16))
+            b = int((1 - i / 600) * int(start_color[5:], 16) + (i / 600) * int(end_color[5:], 16))
+            color = f'#{r:02x}{g:02x}{b:02x}'
+            canvas.create_line(0, i, 800, i, fill=color)
+
+    # Configure style before creating the frame
+        style = ttk.Style()
+        style.configure("NameEntry.TFrame", background="#138d75")  # Adjust color as needed
+
+        self.home_frame = ttk.Frame(self.master, style="NameEntry.TFrame")  # Adding style here
+        self.home_frame.place(relx=0.5, rely=0.5, anchor="center")
+
+        ttk.Label(self.home_frame, text="Enter Player 1's Name:", font=("Helvetica", 14)).pack(pady=10)
+        self.player1_entry = ttk.Entry(self.home_frame, font=("Helvetica", 14))
+        self.player1_entry.pack(pady=5)
+
+        ttk.Label(self.home_frame, text="Enter Player 2's Name:", font=("Helvetica", 14)).pack(pady=10)
+        self.player2_entry = ttk.Entry(self.home_frame, font=("Helvetica", 14))
+        self.player2_entry.pack(pady=5)
+
+        start_button = ttk.Button(self.home_frame, text="Start Game", command=self.start_game_if_names_given)
+        start_button.pack(pady=20)
+
+        back_button = ttk.Button(self.master, text="Back", command=self.create_game_options_screen, style="BackButton.TButton")
+        back_button.place(relx=0.5, rely=0.95, anchor="center")
+
+        style.configure("BackButton.TButton", foreground="Red", background="#FF5733", font=("Helvetica", 16), padding=(8, 3))
+        
+        
+    def start_game_if_names_given(self):
+        # Add the start_game_if_names_given code here (same as before)
+        # Get player names
+        self.player1_name = self.player1_entry.get()
+        self.player2_name = self.player2_entry.get()
+
+        # Check if both player names are given
+        if self.player1_name and self.player2_name:
+            # Destroy the current screen and show the game interface
+            for widget in self.master.winfo_children():
+                widget.destroy()
+            self.create_interface()
+        else:
+            # Display error message if names are not given
+            error_label = Label(self.home_frame, text="Please enter names for both players.", font=("Helvetica", 12), fg="red")
+            error_label.pack(pady=5)
+    def create_interface(self):
+        # Add the create_interface code here (same as before)
+        # Create a canvas for the gradient background
+        canvas = Canvas(self.master, width=1300, height=1000)
+        canvas.place(relx=0, rely=0)
+
+        # Load background image for playing interface using PIL
+        bg_image = Image.open("C:/Users/PMLS/Documents/Dice1.jpg")
+        bg_image = bg_image.resize((1300, 1000), Image.ANTIALIAS)  # Resize the image to fit the window
+        self.bg_photo = ImageTk.PhotoImage(bg_image)
+        bg_label = Label(self.master, image=self.bg_photo)
+        bg_label.image = self.bg_photo  # Keep a reference to the image to prevent garbage collection
+        bg_label.place(relx=0.5, rely=0.5, anchor="center")
+        
+        game_name_label = Label(self.master, text="Dice Rolling Game", font=("Helvetica", 16), fg="White", bg="#330033")
+        game_name_label.place(relx=0.07, rely=0.03, anchor="center")
+
+
+        self.player1_frame = ttk.Frame(self.master, style="Player1.TFrame")
+        self.player1_frame.place(relx=0.05, rely=0.05, relwidth=0.4, relheight=0.9)
+
+        # Configure player 1 label with custom style
+        ttk.Label(self.player1_frame, text=self.player1_name, font=("Helvetica", 16), style="PinkPlayerLabel.TLabel").pack(pady=10)
+        self.player1_score_label = ttk.Label(self.player1_frame, text="Total Score: 0", font=("Helvetica", 24, "bold"), style="ScoreLabel.TLabel", foreground="blue")
+        self.player1_score_label.pack(pady=(200, 20))  # Increase top padding to center vertically
+
+        self.player2_frame = ttk.Frame(self.master, style="Player2.TFrame")
+        self.player2_frame.place(relx=0.55, rely=0.05, relwidth=0.4, relheight=0.9)
+
+        # Configure player 2 label with custom style
+        ttk.Label(self.player2_frame, text=self.player2_name, font=("Helvetica", 16), style="PurplePlayerLabel.TLabel").pack(pady=10)
+        self.player2_score_label = ttk.Label(self.player2_frame, text="Total Score: 0", font=("Helvetica", 24, "bold"), style="ScoreLabel.TLabel", foreground="red")
+        self.player2_score_label.pack(pady=(200, 20))  # Increase top padding to center vertically
+
+        self.roll_area = Button(self.master, text="Roll Dice", font=("Helvetica", 16), bg="green", fg="white", padx=20, pady=10, cursor="hand2", command=self.dice_roll)
+        self.roll_area.place(relx=0.35, rely=0.85, relwidth=0.3)
+
+        # Adjust style for the player name labels
+        style = ttk.Style()
+        style.configure("PinkPlayerLabel.TLabel", foreground="pink", background="purple")
+        style.configure("PurplePlayerLabel.TLabel", foreground="purple", background="pink")
+        
+        
+    def dice_roll(self):
+        # Add the roll_dice code here (same as before)
+        if self.turn_count < self.max_turns:  # Check if the game is still ongoing
+            if self.current_player == 1:
+                dice_result = random.randint(1, 6)
+                self.player1_score += dice_result
+                self.player1_score_label.config(text=f"Total Score: {self.player1_score}")
+            else:
+                dice_result = random.randint(1, 6)
+                self.player2_score += dice_result
+                self.player2_score_label.config(text=f"Total Score: {self.player2_score}")
+
+            self.turn_count += 1
+
+            if self.turn_count == self.max_turns:
+                self.declare_winner()
+            else:
+                self.switch_player()
+
+
+    def switch_player(self):
+        # Add the switch_player code here (same as before)
+        self.current_player = 3 - self.current_player  # Switch between player 1 and player 2
+        
+    def declare_winner(self):
+        # Add the declare_winner code here (same as before)
+        winner = self.player1_name if self.player1_score > self.player2_score else self.player2_name if self.player2_score > self.player1_score else "It's a tie!"
+        winner_label = ttk.Label(self.master, text=f"The winner is {winner}!", font=("Helvetica", 18), foreground="blue" if winner != "It's a tie!" else "black")
+        winner_label.place(relx=0.35, rely=0.70, relwidth=0.3)
+
+        play_again_button = ttk.Button(self.master, text="Play Again", command=self.reset_game)
+        play_again_button.place(relx=0.3, rely=0.80, relwidth=0.4)
+
+    def reset_game(self):
+        # Add the reset_game code here (same as before)
+        self.player1_name = ""
+        self.player2_name = ""
+        self.player1_score = 0
+        self.player2_score = 0
+        self.turn_count = 0
+        self.current_player = 1
+
+        for widget in self.master.winfo_children():
+            widget.destroy()
+
+        self.create_game_options_screen()
+
+
+
+    def start_guess_game(self):
+        # Destroy the current screen and start the dice guessing game
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.create_guess_game_screen()
+
+    def create_guess_game_screen(self):
+        # Your guess game screen creation code here...
+        self.gradient_background()
+
+    # Display the "Roll the Dice" label
+        roll_label = Label(self.master, text="Roll the Dice", font=("Helvetica", 24), fg="white", bg="green")
+        roll_label.place(relx=0.5, rely=0.05, anchor="center")
+        self.roll_label = roll_label  # Define self.roll_label
+
+    # Display the dice canvas
+        self.dice_canvas = Canvas(self.master, width=200, height=200, bg="#148f77")
+        self.dice_canvas.place(relx=0.5, rely=0.3, anchor="center")
+        
+        game_name_label = Label(self.master, text="Guess Dice Game", font=("Helvetica", 16), fg="White", bg="#330033")
+        game_name_label.place(relx=0.07, rely=0.03, anchor="center")
+
+
+    # Display the "Selected Number" label
+        self.selected_number_label = Label(self.master, text="Selected Number:", font=("Helvetica", 18), fg="white", bg="#003366")
+        self.selected_number_label.place(relx=0.2, rely=0.5, anchor="center")
+
+    # Display the score label
+        self.score_label = Label(self.master, text="Score: 0", font=("Helvetica", 18), fg="white", bg="#006666")
+        self.score_label.place(relx=0.9, rely=0.5, anchor="center")
+
+    # Display the "Guess the number of dice" label
+        guess_label = Label(self.master, text="Guess the number of dice", font=("Helvetica", 18), fg="#8e44ad", bg="#e8daef")
+        guess_label.place(relx=0.5, rely=0.880, anchor="center")
+
+    # Initialize score and number of plays
+        self.score = 0
+        self.num_plays = 0
+
+    # Display buttons
+        self.display_buttons()
+
+    # Create a back button
+        back_button = ttk.Button(self.master, text="Back", command=self.show_game_options, style="BackButton.TButton")
+        back_button.place(relx=0.5, rely=0.95, anchor="center")
+
+
+    
+    def gradient_background(self):
+    # Create a gradient background
+        for i in range(600):
+        # Interpolate between two vibrant colors: electric blue and neon green
+            r = int((1 - i / 600) * 0 + (i / 600) * 0)
+            g = int((1 - i / 600) * 191 + (i / 600) * 255)
+            b = int((1 - i / 600) * 255 + (i / 600) * 0)
+
+        # Format the color string
+            color = "#{:02x}{:02x}{:02x}".format(r, g, b)
+
+        # Create a label with the calculated color and place it on the master window
+            tk.Label(self.master, bg=color).place(relx=0, rely=i/600, relwidth=1, relheight=1/600)
+
+            
+    def display_buttons(self):
+        # Add buttons for numbers 1, 2, and 3
+        button_width = 10
+        button_height = 1
+        button_distance = 0.06  # Adjust distance between buttons
+        self.buttons = []
+        for i in range(1, 4):
+            button = tk.Button(self.master, text=str(i), width=button_width, height=button_height,
+                                command=lambda num=i: self.guess(num), font=("Helvetica", 18), bg="#f39c12", bd=5)
+            button.place(relx=0.3*(i-1)+0.2, rely=0.7, anchor=tk.CENTER)
+            self.buttons.append(button)
+
+        # Add buttons for numbers 4, 5, and 6
+        for i in range(4, 7):
+            button = tk.Button(self.master, text=str(i), width=button_width, height=button_height,
+                                command=lambda num=i: self.guess(num), font=("Helvetica", 18), bg="#f39c12", bd=5)
+            button.place(relx=0.3*(i-4)+0.2, rely=0.8, anchor=tk.CENTER)
+            self.buttons.append(button)
+
+
+
+    def guess(self, guess):
+        # Your guess method code here
+        self.guessed_number = guess
+        self.selected_number_label.config(text=f"Selected Number: {guess}", fg="yellow")  # Colorful label
+        self.disable_buttons()
+        self.master.after(3000, self.roll_dice)
+
+    def roll_dice(self):
+        # Your roll dice method code here
+        self.generated_number = random.randint(1, 6)
+        self.show_dice()
+        self.check_result()
+
+    def show_dice(self):
+        # Your show dice method code here
+        self.dice_canvas.delete("all")
+        x = y = 100
+        radius = 20
+        dot_positions = {
+            1: [(x, y)],
+            2: [(x - 50, y - 50), (x + 50, y + 50)],
+            3: [(x - 50, y - 50), (x, y), (x + 50, y + 50)],
+            4: [(x - 50, y - 50), (x + 50, y - 50), (x - 50, y + 50), (x + 50, y + 50)],
+            5: [(x - 50, y - 50), (x + 50, y - 50), (x, y), (x - 50, y + 50), (x + 50, y + 50)],
+            6: [(x - 50, y - 50), (x + 50, y - 50), (x - 50, y), (x + 50, y), (x - 50, y + 50), (x + 50, y + 50)]
+        }
+        colors = ['red', 'blue', 'green', 'orange', 'purple', 'yellow']
+        for i, position in enumerate(dot_positions[self.generated_number]):
+            color = colors[i]
+            self.dice_canvas.create_oval(position[0] - radius, position[1] - radius,
+                                         position[0] + radius, position[1] + radius, fill=color, outline='')
+
+    def check_result(self):
+    # Check if guessed number matches generated number
+        if self.guessed_number == self.generated_number:
+            self.score += 5
+            self.score_label.config(text=f"Score: {self.score}", fg="green")  # Update score label
+            self.roll_label.config(text="You won!", fg="white")  # Update roll label
+        else:
+            self.roll_label.config(text="You lost!", fg="red")  # Update roll label
+
+    # Increment number of plays
+        self.num_plays += 1
+
+    # Check if the game is over
+        if self.num_plays >= 5:
+            self.roll_label.config(text=f"Game Over. Your total Score is {self.score}", fg="#000033")  # Update roll label
+            self.disable_buttons()  # Disable buttons after 5 turns
+        else:
+            self.enable_buttons()  # Enable buttons for the next turn
+            
+            
+    def disable_buttons(self):
+    # Disable all buttons
+        for button in self.buttons:
+            button.config(state="disabled")
+
+    def enable_buttons(self):
+    # Enable all buttons
+        for button in self.buttons:
+            button.config(state="normal")
+
+
+    def start_target_game(self):
+    # Destroy the current screen and start the target game
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.create_target_game_screen()
+
+    def create_target_game_screen(self):
+    # Create a canvas for the gradient background
+        canvas = Canvas(self.master, width=1300, height=1000)
+        canvas.place(relx=0, rely=0)
+
+        # Define gradient colors
+        start_color = "#660033"  # Blue
+        end_color = "#003333"    # Dark blue
+
+        # Create a vertical gradient rectangle
+        for i in range(1000):
+            # Interpolate color
+            r = int((1 - i / 1000) * int(start_color[1:3], 16) + (i / 1000) * int(end_color[1:3], 16))
+            g = int((1 - i / 1000) * int(start_color[3:5], 16) + (i / 1000) * int(end_color[3:5], 16))
+            b = int((1 - i / 1000) * int(start_color[5:], 16) + (i / 1000) * int(end_color[5:], 16))
+            color = f'#{r:02x}{g:02x}{b:02x}'
+            canvas.create_line(0, i, 1300, i, fill=color)
+
+        # Display the top heading
+        top_heading = Label(self.master, text="ACHIEVE THE TARGET AND WIN THE GAME", font=("Helvetica", 28), fg="white", bg="#660033")
+        top_heading.place(relx=0.5, rely=0.1, anchor="center")
+        
+        game_name_label = Label(self.master, text="Target Rolling Game", font=("Helvetica", 16), fg="White", bg="#330033")
+        game_name_label.place(relx=0.07, rely=0.03, anchor="center")
+
+
+        # Create a button for showing the target
+        self.show_target_button = ttk.Button(self.master, text="Show Target", command=self.show_target, style="GameButton.TButton")
+        self.show_target_button.place(relx=0.3, rely=0.8, anchor="center")
+
+        # Create a button for rolling the dice
+        self.roll_dice_button = ttk.Button(self.master, text="Roll Dice", command=self.roll_dice_target, state="disabled", style="GameButton.TButton")
+        self.roll_dice_button.place(relx=0.7, rely=0.8, anchor="center")
+
+        # Create a back button
+        back_button = ttk.Button(self.master, text="Back", command=self.show_game_options, style="BackButton.TButton")
+        back_button.place(relx=0.5, rely=0.95, anchor="center")
+
+        # Define custom style for the buttons
+        self.style = ttk.Style()
+        self.style.configure("GameButton.TButton", foreground="Green", background="Black", font=("Helvetica", 20), width=15)
+
+        # Set initial colors for the buttons
+        self.set_button_colors()
+        
+    def set_button_colors(self):
+        # Set color for Show Target button
+        if self.show_target_button["state"] == "disabled":
+            self.style.map("GameButton.TButton", background=[("disabled", "#FF0066")])
+        else:
+            self.style.map("GameButton.TButton", background=[("active", "#27ae60"), ("!active", "#2ecc71")])
+
+        # Set color for Roll Dice button
+        if self.roll_dice_button["state"] == "disabled":
+            self.style.map("GameButton.TButton", background=[("disabled", "#c0392b")])
+        else:
+            self.style.map("GameButton.TButton", background=[("active", "#e74c3c"), ("!active", "#f39c12")])
+
+
+        
+
+    def background_gradient(master):
+    # Create a canvas with a gradient background
+        canvas = tk.Canvas(master, width=1000, height=1300)
+        canvas.place(x=0, y=0)
+
+    # Define gradient colors
+        color1 = "#660033"  # Blue
+        color2 = "#003333"  # Dark blue
+
+    # Create gradient
+        for y in range(400):
+            ratio = y / 400
+            r = int(color1[1:3], 16) * (1 - ratio) + int(color2[1:3], 16) * ratio
+            g = int(color1[3:5], 16) * (1 - ratio) + int(color2[3:5], 16) * ratio
+            b = int(color1[5:7], 16) * (1 - ratio) + int(color2[5:7], 16) * ratio
+            color = f"#{int(r):02x}{int(g):02x}{int(b):02x}"
+            canvas.create_line(0, y, 600, y, fill=color, width=1)
+
+    def show_target(self):
+    # Generate a random target number
+        self.target = random.randint(1, 6)
+
+
+        # Display the target label
+        self.target_label = Label(self.master, text=f"Target: {self.target}", font=("Helvetica", 25), fg="white", bg="#660033")
+        self.target_label.place(relx=0.5, rely=0.2, anchor="center")
+
+        # Disable the show target button
+        self.show_target_button.config(state="disabled")
+
+        # Enable the roll dice button
+        self.roll_dice_button.config(state="normal")
+        
+        # Update button colors
+        self.set_button_colors()
+        
+    def roll_dice_target(self):
+    # Roll the dice and check if the player wins or loses
+        rolled_number = random.randint(1, 6)  # Roll the dice
+
+    # Show the rolled number
+        rolled_label = Label(self.master, text=f"You rolled: {rolled_number}", font=("Helvetica", 40), fg="white", bg= "Grey")
+        rolled_label.place(relx=0.5, rely=0.5, anchor="center")
+
+    # Show the dice with the corresponding number of dots
+        self.dice_show(rolled_number)
+
+    # Compare the rolled number with the target
+        if rolled_number == self.target:
+            result_label = Label(self.master, text="You won!", font=("Helvetica", 30), fg="green")
+        else:
+            result_label = Label(self.master, text="You lost!", font=("Helvetica", 30), fg="red")
+        result_label.place(relx=0.5, rely=0.62, anchor="center")
+        
+        self.roll_dice_button.config(state="disabled")
+        
+        # Update button colors
+        self.set_button_colors()
+        
+    def dice_show(self, number):
+        # Create a canvas for the dice
+        canvas = Canvas(self.master, width=100, height=100, bg="white")
+        canvas.place(relx=0.5, rely=0.35, anchor="center")
+
+        # Draw the dots on the dice
+        if number in [1, 3, 5]:
+            canvas.create_oval(45, 45, 55, 55, fill="black")  # Center dot
+        if number in [2, 3, 4, 5, 6]:
+            canvas.create_oval(25, 25, 35, 35, fill="black")  # Top left dot
+            canvas.create_oval(65, 65, 75, 75, fill="black")  # Bottom right dot
+        if number in [4, 5, 6]:
+            canvas.create_oval(65, 25, 75, 35, fill="black")  # Top right dot
+            canvas.create_oval(25, 65, 35, 75, fill="black")  # Bottom left dot
+        if number == 6:
+            canvas.create_oval(45, 25, 55, 35, fill="black")  # Top center dot
+            canvas.create_oval(45, 65, 55, 75, fill="black")  # Bottom center dot
+
+
+
+
+    def show_pig_games(self):
+          # Your show pig games method code here...
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.create_name_screen()
+        
+    def create_name_screen(self):
+        canvas = Canvas(self.master, width=1300, height=1000)
+        canvas.place(relx=0, rely=0)
+
+        bg_image = Image.open("C:/Users/PMLS/Documents/PiggggDice.jpg")
+        bg_image = bg_image.resize((1300, 1000), Image.ANTIALIAS)  # Resize the image to fit the window
+        self.bg_photo = ImageTk.PhotoImage(bg_image)
+        bg_label = Label(self.master, image=self.bg_photo)
+        bg_label.image = self.bg_photo  # Keep a reference to the image to prevent garbage collection
+        bg_label.place(relx=0.5, rely=0.5, anchor="center")
+
+        start_color = "#87CEEB"  # Light sky blue
+        end_color = "#4682B4"    # Steel blue
+
+        for i in range(1000):
+            r = int((1 - i / 1000) * int(start_color[1:3], 16) + (i / 1000) * int(end_color[1:3], 16))
+            g = int((1 - i / 1000) * int(start_color[3:5], 16) + (i / 1000) * int(end_color[3:5], 16))
+            b = int((1 - i / 1000) * int(start_color[5:], 16) + (i / 1000) * int(end_color[5:], 16))
+            color = f'#{r:02x}{g:02x}{b:02x}'
+            canvas.create_line(0, i, 1300, i, fill=color)
+
+        style = ttk.Style()
+        style.configure("NameEntry.TFrame", background="#ff5bfc")  # Adjust color as needed
+        
+        game_name_label = Label(self.master, text="Big Pig Dice Game", font=("Helvetica", 16), fg="White", bg="#330033")
+        game_name_label.place(relx=0.07, rely=0.03, anchor="center")
+
+
+        self.home_frame = ttk.Frame(self.master, style="NameEntry.TFrame")  # Adding style here
+        self.home_frame.place(relx=0.5, rely=0.75, anchor="center")
+
+        ttk.Label(self.home_frame, text="Enter Player 1's Name:", font=("Helvetica", 14)).pack(pady=10)
+        self.player1_entry = ttk.Entry(self.home_frame, font=("Helvetica", 14))
+        self.player1_entry.pack(pady=5)
+
+        ttk.Label(self.home_frame, text="Enter Player 2's Name:", font=("Helvetica", 14)).pack(pady=10)
+        self.player2_entry = ttk.Entry(self.home_frame, font=("Helvetica", 14))
+        self.player2_entry.pack(pady=5)
+
+        start_button = ttk.Button(self.home_frame, text="Start Game", command=self.start_game_if_names_are_given)
+        start_button.pack(pady=20)
+        
+        # Create a back button
+        back_button = ttk.Button(self.master, text="Back", command=self.show_game_options, style="BackButton.TButton")
+        back_button.place(relx=0.1, rely=0.95, anchor="center")
+
+        
+        
+    def start_game_if_names_are_given(self):
+    # Add the start_game_if_names_given code here (same as before)
+    # Get player names
+        self.player1_name = self.player1_entry.get()
+        self.player2_name = self.player2_entry.get()
+
+        if self.player1_name and self.player2_name:
+            for widget in self.master.winfo_children():
+                widget.destroy()
+            self.create_big_pig_dice_game(self.player1_name, self.player2_name)
+        else:
+            error_label = Label(self.home_frame, text="Please enter names for both players.", font=("Helvetica", 12), fg="red")
+            error_label.pack(pady=5)
+            
+    def create_big_pig_dice_game(self, player1_name, player2_name):
+        
+        self.player1_name = player1_name
+        self.player2_name = player2_name
+        self.current_player = 1
+        self.turn_score = 0
+        self.players = {self.player1_name: 0, self.player2_name: 0}
+
+        self.create_widgets()
+        
+        
+    def create_widgets(self):
+    # Your create_widgets method code here...
+        
+    # Create Player 1 Frame
+        bg_image = Image.open("C:/Users/PMLS/Documents/PigggggDice.jpg")
+        bg_image = bg_image.resize((1300, 1000), Image.ANTIALIAS)  # Resize the image to fit the window
+        self.bg_photo = ImageTk.PhotoImage(bg_image)
+        bg_label = Label(self.master, image=self.bg_photo)
+        bg_label.image = self.bg_photo  # Keep a reference to the image to prevent garbage collection
+        bg_label.place(relx=0.5, rely=0.5, anchor="center")
+        
+        game_name_label = Label(self.master, text="Big Pig Dice Game", font=("Helvetica", 16), fg="White", bg="#330033")
+        game_name_label.place(relx=0.07, rely=0.03, anchor="center")
+
+
+        
+    # Create Player 1 Frame
+        self.player1_frame = ttk.Frame(self.master, style="Player1.TFrame")
+        self.player1_frame.place(relx=0.05, rely=0.05, relwidth=0.4, relheight=1.0)
+
+        ttk.Label(self.player1_frame, text=self.player1_name, font=("Times new roman", 25), style="PinkPlayerLabel.TLabel").pack(pady=20)
+        self.player1_score_label = ttk.Label(self.player1_frame, text=f"{self.player1_name} Score: {self.players[self.player1_name]}", foreground="white", background="#ff6666", font=('Helvetica', 30))
+        self.player1_score_label.pack(pady=200)
+
+    # Create Player 2 Frame
+        self.player2_frame = ttk.Frame(self.master, style="Player2.TFrame")
+        self.player2_frame.place(relx=0.55, rely=0.05, relwidth=0.4, relheight=1.0)
+
+        ttk.Label(self.player2_frame, text=self.player2_name, font=("Times new roman", 25), style="PurplePlayerLabel.TLabel").pack(pady=20)
+        self.player2_score_label = ttk.Label(self.player2_frame, text=f"{self.player2_name} Score: {self.players[self.player2_name]}", foreground="white", background="#66b2ff", font=('Helvetica', 30))
+        self.player2_score_label.pack(pady=200)
+
+    # Buttons Frame
+        self.roll_button = ttk.Button(self.master, text="Roll Dice", command=self.roll_dice_pig, style="Roll.TButton")
+        self.roll_button.pack(side=tk.BOTTOM, padx=5, pady=3, fill=tk.BOTH)  # Fill the button with color and expand
+        self.roll_button.place(relx=0.5, rely=0.85, anchor="center") 
+
+        self.hold_button = ttk.Button(self.master, text="Hold", command=self.hold_score, style="Hold.TButton")
+        self.hold_button.pack(side=tk.BOTTOM, padx=5, pady=2, fill=tk.BOTH)  # Fill the button with color and expand
+        self.hold_button.place(relx=0.5, rely=0.75, anchor="center")  
+
+        style.configure("Roll.TButton", foreground="brown", background="#0b5345", font=("Times new roman", 25, "bold"), padding=(20, 10))
+        style.configure("Hold.TButton", foreground="green", background="#0b5345", font=("Helvetica", 14), padding=(10, 5))
+    # Labels for current score and total score
+        self.turn_score_label = ttk.Label(self.master, text=f"Turn Score: {self.turn_score}", foreground="white", background="#ee99ff", font=('Helvetica', 25))
+        self.turn_score_label.place(relx=0.5, rely=0.275, anchor="center")
+
+        self.current_player_label = ttk.Label(self.master, text=f"Current Player: {self.player1_name}'s Turn", foreground="white", background="#ee99ff", font=('Helvetica', 22))
+        self.current_player_label.place(relx=0.5, rely=0.20, anchor="center")
+        
+        back_button = ttk.Button(self.master, text="Back", command=self.show_game_options, style="BackButton.TButton")
+        back_button.place(relx=0.5, rely=0.95, anchor="center")
+
+
+    def roll_dice_pig(self):
+
+        roll = self.dice.roll()
+        if roll == 1:
+            self.turn_score = 0
+            self.switch_player()
+        else:
+            self.turn_score += roll
+        self.update_display()
+        self.check_for_winner()
+
+    def hold_score(self):
+        self.players[self.get_current_player_name()] += self.turn_score
+        self.turn_score = 0
+        self.switch_player()
+        self.update_display()
+        self.check_for_winner()
+        
+    def check_for_winner(self):
+        for player, score in self.players.items():
+            if score >= 100:
+                winner_label = ttk.Label(self.master, text=f"{player} won the game!", foreground="white", background="Green", font=('Helvetica', 35))
+                winner_label.place(relx=0.5, rely=0.45, anchor="center")
+                self.roll_button.config(state=tk.DISABLED)
+                self.hold_button.config(state=tk.DISABLED)
+                break  # Stop checking for more winners after announcing the first winner
+
+    def switch_player(self):
+        self.current_player = 3 - self.current_player
+
+    def get_current_player_name(self):
+        return self.player1_name if self.current_player == 1 else self.player2_name
+
+    def update_display(self):
+        current_player_name = self.get_current_player_name()
+        self.player1_score_label.config(text=f"{self.player1_name} Score: {self.players[self.player1_name]}")
+        self.player2_score_label.config(text=f"{self.player2_name} Score: {self.players[self.player2_name]}")
+        self.turn_score_label.config(text=f"Turn Score: {self.turn_score}")
+        self.current_player_label.config(text=f"Current Player: {current_player_name}'s Turn")
+
+    def show_rules(self):
+        # Your show rules method code here...
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        self.create_rules_screen()
+
+    def create_rules_screen(self):
+        # Your create rules screen method code here...
+        canvas = Canvas(self.master, width=1300, height=1000, bg="#6699CC")  # Gold color background
+        canvas.place(relx=0, rely=0)
+
+        # Display rules of the game
+        rules_text = """
+        Rules of the Game:
+
+1. Dice Rolling Game:
+
+ .Players: Two players.
+ .Objective: Roll the dice and accumulate a higher score than 
+ opponent.
+ .Gameplay:
+ i) Each player takes turns rolling a six-sided die.
+ii) The number rolled on the die is added to the player's total score.
+iii) The game consists of a maximum of 2 turns for each player.
+iv) The player with the highest total score at the end wins.
+
+2. Target Dice Game:
+
+ .Players: One player.
+ .Objective: Roll the dice to achieve a specific target number.
+ .Gameplay:
+ i) The player is given a target number.
+ ii) The player rolls the dice to try and match the target number.
+ iii) If the rolled number matches the target number, the player wins; 
+ otherwise, they lose.
+ 
+ 
+      """
+        rules_ka_text= """
+3. Dice Guess Game:
+
+ .Players: One player.
+ .Objective: Guess the number of dice to be rolled and match the generated number.
+ .Gameplay:
+ i) The player guesses the number of dice to be rolled from the given options.
+ ii) After making a guess, the dice are rolled.
+ iii) If the guessed and generated numbers match, the player wins and earns a score of 
+  5.
+ iv) The player has 5 turns to guess and increase their score.
+
+4. Pig Dice Game:
+
+ .Players: Two players.
+ .Objective: Roll the dice to accumulate the highest score without rolling a one.
+ .Gameplay:
+ i) Each player takes turns rolling the dice.
+ ii) If the rolled number is not a one, the player adds the number to their total score and 
+ can choose to roll again or stop.
+iii) If the rolled number is a one, the player loses all points gained in that turn, and their 
+ turn ends.
+ iv) The first player to reach a total score of 75 or more wins the game.
+ 
+ These are the rules for each game. Players can enjoy different experiences and 
+ challenges with each game type.
+  """
+        rules_label = Label(self.master, text=rules_text, font=("Times new roman", 15), bg="#6699CC", justify="left")
+        rules_label.place(relx=0.23, rely=0.5, anchor="center")
+        
+        rules_ka_label = Label(self.master, text=rules_ka_text, font=("Times new roman", 14), bg="#6699CC", justify="left")
+        rules_ka_label.place(relx=0.73, rely=0.5, anchor="center")
+
+
+        # Add a button to go back to the opening screen
+        back_button = ttk.Button(self.master, text="Back", command=self.create_opening_screen)
+        back_button.place(relx=0.95, rely=0.975, anchor="center")
+class Dice:
+    def roll(self):
+        return random.randint(1, 6)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+
+    style = ttk.Style()
+    style.configure("Player1.TFrame", background="#ff6666")
+    style.configure("Player2.TFrame", background="#66b2ff")
+    style.configure("PlayerLabel.TLabel", foreground="white")
+    style.configure("ScoreLabel.TLabel", foreground="black")
+    style.configure("PlayButton.TButton", foreground="brown", background="#0b5345", font=("Times new roman", 25, "bold"), padding=(20, 10))
+    style.configure("GameButton.TButton", foreground="white", background="#FF5733", font=("Helvetica", 16), padding=(20, 10))
+    style.configure("BackButton.TButton", foreground="white", background="#FF5733", font=("Helvetica", 16), padding=(10, 5))
+
+    game = DiceGame(root)
+    root.mainloop()
