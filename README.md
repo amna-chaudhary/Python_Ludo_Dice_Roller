@@ -91,5 +91,5 @@ Amna Afzal
 
 ## ⭐ Support 
 
-Give it a star if it seems interested to you...
+Give it a star if it seems interested to you....
 
